@@ -9,6 +9,7 @@ public class Mover : MonoBehaviour
     // Character controller (adjustable params)
     [SerializeField] float walkingSpeed = 1.0f;
     [SerializeField] float runningSpeed = 2.0f;
+    [SerializeField] float dodgingSpeed = 6.0f;
     [SerializeField] float jumpHeight = 1.0f;
     [SerializeField] float gravity = -9.81f;
     [SerializeField] float turnSmoothTime = 0.1f;
@@ -25,6 +26,7 @@ public class Mover : MonoBehaviour
     private bool isGrounded;          // checks if character controller is grounded
     private bool isWalking = false;
     private bool isRunning = false;
+    private bool isDodging = false;
 
     enum States
     {
@@ -73,6 +75,14 @@ public class Mover : MonoBehaviour
 
             //... but we also need to move in that direction
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+
+            // check if the character is dodging and adjust the speed to the dodging speed
+            if (isDodging)
+            {
+                characterController.Move(moveDir.normalized * dodgingSpeed * Time.deltaTime);
+                return;
+            }
+
             // Check if the player is sprinting or just walking
             if (Input.GetKey(KeyCode.LeftShift))
                 characterController.Move(moveDir.normalized * runningSpeed * Time.deltaTime);
@@ -110,18 +120,30 @@ public class Mover : MonoBehaviour
 
     private void HandleMovementAnimations()
     {
-        // if the shift button is pressed down and the player is grounded
+        // if the shift button is pressed down and the player is grounded, trigger sprint animation
         if (Input.GetKey(KeyCode.LeftShift) && isGrounded)
         {
             animator.SetBool("isRunning", true);
             animator.SetBool("isIdle", false);
             animator.SetBool("isWalking", false);
+
+            // for dodging
+            if (Input.GetKey(KeyCode.Space))
+            {
+                StartCoroutine(PlayDodgingSequence());
+            }
         }
         else if (!Input.GetKey(KeyCode.LeftShift) && isGrounded)
         {
             animator.SetBool("isWalking", true);
             animator.SetBool("isRunning", false);
             animator.SetBool("isIdle", false);
+
+            // for dodging
+            if (Input.GetKey(KeyCode.Space))
+            {
+                StartCoroutine(PlayDodgingSequence());
+            }
         }
     }
 
@@ -130,6 +152,23 @@ public class Mover : MonoBehaviour
         animator.SetBool("isRunning", false);
         animator.SetBool("isWalking", false);
         animator.SetBool("isIdle", true);
+    }
+
+    private IEnumerator PlayDodgingSequence()
+    {
+        isDodging = true;
+
+        // dodging animation will play here
+        animator.SetBool("isDodging", true);
+        animator.SetBool("isWalking", false);
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isIdle", false);
+
+        // wait 2 seconds for the animation to finish playing
+        yield return new WaitForSeconds(1);
+
+        animator.SetBool("isDodging", false);
+        isDodging = false;
     }
 
     // These function can be called everytime player's foot hits the ground
