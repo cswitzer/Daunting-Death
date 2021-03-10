@@ -28,7 +28,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CloudsCubemap:
-        m_Texture: {fileID: 8900000, guid: ac1b6b76ea3b68b41b391992d47806bd, type: 3}
+        m_Texture: {fileID: 8900000, guid: c3ca985cc2eeff94b87be0648b59e8a2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MoonTexture:
@@ -52,8 +52,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _BackgroundCat: 1
+    - _BackgroundCubemapSpace: 0
     - _BackgroundExposure: 1
     - _BackgroundMode: 0
+    - _Banner: 1
     - _CloudsCat: 1
     - _CloudsHeight: 0
     - _CloudsLitbySun: 0
@@ -63,6 +66,7 @@ Material:
     - _EnableBuiltinFog: 0
     - _EnableClouds: 1
     - _EnableCloudsRotation: 1
+    - _EnableFogMessage: 0
     - _EnableMoon: 0
     - _EnablePatternOverlay: 0
     - _EnableStars: 0

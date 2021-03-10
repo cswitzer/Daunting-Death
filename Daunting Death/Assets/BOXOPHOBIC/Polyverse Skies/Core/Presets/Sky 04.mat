@@ -173,8 +173,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _BackgroundCat: 1
+    - _BackgroundCubemapSpace: 0
     - _BackgroundExposure: 1
     - _BackgroundMode: 0
+    - _Banner: 1
     - _BuiltInFog: 1
     - _BumpScale: 1
     - _CloudHeight: -0.185
@@ -198,6 +201,7 @@ Material:
     - _EnableClouds: 1
     - _EnableCloudsRotation: 1
     - _EnableDirectionLight: 0
+    - _EnableFogMessage: 0
     - _EnableMoon: 0
     - _EnablePattern: 1
     - _EnablePatternOverlay: 1
@@ -257,16 +261,16 @@ Material:
     - _StarsAmount: 3
     - _StarsCat: 1
     - _StarsFlikerContrast: 1
-    - _StarsHeightMask: 0.2
+    - _StarsHeightMask: 0.042
     - _StarsHeigntMask: 1
     - _StarsHorizonMask: 1
-    - _StarsIntensity: 3
+    - _StarsIntensity: 3.64
     - _StarsLayer: 3
     - _StarsMaskPower: 1
     - _StarsRotation: 360
     - _StarsRotationSpeed: 0.5
-    - _StarsSize: 0.6
-    - _StarsSunMask: 0.02
+    - _StarsSize: 0.879
+    - _StarsSunMask: 0
     - _SunCat: 1
     - _SunIntensity: 2
     - _SunRadiusB: 0

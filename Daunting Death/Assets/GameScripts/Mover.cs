@@ -7,7 +7,8 @@ using UnityEngine.AI;
 public class Mover : MonoBehaviour
 {
     // Character controller (adjustable params)
-    [SerializeField] float maxSpeed = 2.0f;
+    [SerializeField] float walkingSpeed = 1.0f;
+    [SerializeField] float runningSpeed = 2.0f;
     [SerializeField] float jumpHeight = 1.0f;
     [SerializeField] float gravity = -9.81f;
     [SerializeField] float turnSmoothTime = 0.1f;
@@ -20,29 +21,34 @@ public class Mover : MonoBehaviour
 
     // Character Movement Tweaks
     private float turnSmoothVelocity;
-    private float currentSpeed = 0.0f;
-    private float deceleration = 10.0f;
     private Vector3 playerVelocity;       // for handling gravity
-    private bool groundedPlayer;          // checks if character controller is grounded
+    private bool isGrounded;          // checks if character controller is grounded
+    private bool isWalking = false;
+    private bool isRunning = false;
 
-    // Animation
-    public float animVelocity = 0.0f;     // for blend tree
-    public float animAcceleration = .1f; // for blend tree
-    public float animDeceleration = 0.5f; // for blend tree
-    private int velocityHash;             // for blend tree
+    enum States
+    {
+        FreeMovement,
+        LockedOn
+    }
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        velocityHash = Animator.StringToHash("Velocity");
     }
 
     void Update()
     {
-        MovePlayer();
         CheckIfGrounded();
+        if (characterController.isGrounded)
+            playerVelocity.y = 0;
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
         HandleFalling();
     }
 
@@ -56,11 +62,8 @@ public class Mover : MonoBehaviour
         // magnitude of direction checks if the character is actually moving
         if (direction.magnitude >= 0.1)
         {
-            // slowly accelerate player
-            BuildUpMovementSpeed();
-
             // update player animation slowly over time
-            UpdateIdleToRunAnimator();
+            HandleMovementAnimations();
 
             // This code only helps our character face the right way...
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camera.eulerAngles.y /*points player in direction of camera*/;
@@ -70,28 +73,34 @@ public class Mover : MonoBehaviour
 
             //... but we also need to move in that direction
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            characterController.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
+            // Check if the player is sprinting or just walking
+            if (Input.GetKey(KeyCode.LeftShift))
+                characterController.Move(moveDir.normalized * runningSpeed * Time.deltaTime);
+            else
+                characterController.Move(moveDir.normalized * walkingSpeed * Time.deltaTime);
         }
         else
         {
-            HandleMovementDeceleration();
-
-            UpdateRunToIdleAnimator();
+            if (isGrounded)
+                RevertToIdleAnim();
         }
     }
 
     private void CheckIfGrounded()
     {
-        groundedPlayer = characterController.isGrounded;
-        if (groundedPlayer && playerVelocity.y < 0)
+        isGrounded = characterController.isGrounded;
+        if (isGrounded)
         {
-            playerVelocity.y = 0f;
+            playerVelocity.y = gravity * Time.deltaTime;
         }
-
+        else
+        {
+            playerVelocity.y += gravity * Time.deltaTime;
+        }
     }
     private void HandleFalling()
     {
-        if (!groundedPlayer)
+        if (!isGrounded)
         {
             // Physics formula for free falling
             playerVelocity.y += gravity * Mathf.Pow(Time.deltaTime, 2);
@@ -99,46 +108,31 @@ public class Mover : MonoBehaviour
         }
     }
 
-    private void UpdateIdleToRunAnimator()
+    private void HandleMovementAnimations()
     {
-        if (animVelocity < 1)
+        // if the shift button is pressed down and the player is grounded
+        if (Input.GetKey(KeyCode.LeftShift) && isGrounded)
         {
-            animVelocity += animAcceleration * (Time.deltaTime * 4);
-            animator.SetFloat(velocityHash, animVelocity);
+            animator.SetBool("isRunning", true);
+            animator.SetBool("isIdle", false);
+            animator.SetBool("isWalking", false);
+        }
+        else if (!Input.GetKey(KeyCode.LeftShift) && isGrounded)
+        {
+            animator.SetBool("isWalking", true);
+            animator.SetBool("isRunning", false);
+            animator.SetBool("isIdle", false);
         }
     }
 
-    private void UpdateRunToIdleAnimator()
+    private void RevertToIdleAnim()
     {
-        if (animVelocity > Mathf.Epsilon)
-        {
-            animVelocity -= animDeceleration * (Time.deltaTime * 3);
-            animator.SetFloat(velocityHash, animVelocity);
-        }
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isWalking", false);
+        animator.SetBool("isIdle", true);
     }
 
-    private void BuildUpMovementSpeed()
-    {
-        // slowly increment the speed of the player as time goes on
-        if (currentSpeed < maxSpeed)
-        {
-            currentSpeed += acceleration * Time.deltaTime;
-        }
-    }
-
-    private void HandleMovementDeceleration()
-    {
-        // if current speed is over zero and movement keys are not pressed
-        if (currentSpeed > 0)
-        {
-            currentSpeed -= deceleration * Time.deltaTime;
-        }
-        else
-        {
-            currentSpeed = 0;
-        }
-    }
-
+    // These function can be called everytime player's foot hits the ground
     private void FootL()
     {
 
@@ -148,5 +142,4 @@ public class Mover : MonoBehaviour
     {
 
     }
-
 }

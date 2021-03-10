@@ -1,0 +1,19 @@
+    velocityHash = Animator.StringToHash("Velocity");
+
+    private void UpdateIdleToRunAnimator()
+    {
+        if (animVelocity < 1)
+        {
+            animVelocity += animAcceleration * (Time.deltaTime * 4);
+            animator.SetFloat(velocityHash, animVelocity);
+        }
+    }
+
+    private void UpdateRunToIdleAnimator()
+    {
+        if (animVelocity > Mathf.Epsilon)
+        {
+            animVelocity -= animDeceleration * (Time.deltaTime * 3);
+            animator.SetFloat(velocityHash, animVelocity);
+        }
+    }
